@@ -194,8 +194,5 @@ router.post("/reset-password/:token", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-app.get("/api/health", (req, res) => {
-  res.status(200).json({ status: "OK", service: "Auth Backend" });
-});
 
 module.exports = router;
