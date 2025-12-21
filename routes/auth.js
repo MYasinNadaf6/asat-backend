@@ -69,14 +69,20 @@ router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
 
+    console.log("FORGOT PASSWORD REQUEST:", email);
+    console.log("EMAIL_USER:", process.env.EMAIL_USER);
+    console.log("EMAIL_PASS EXISTS:", !!process.env.EMAIL_PASS);
+    console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
+
     const user = await User.findOne({ email });
-    if (!user)
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
 
     const resetToken = crypto.randomBytes(32).toString("hex");
 
     user.resetToken = resetToken;
-    user.resetTokenExpiry = Date.now() + 60 * 60 * 1000; // 15 minutes
+    user.resetTokenExpiry = Date.now() + 60 * 60 * 1000;
     await user.save();
 
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
@@ -141,8 +147,21 @@ router.post("/forgot-password", async (req, res) => {
       <p>You requested a password reset for your ASAT Automation account.</p>
       <p>This link is valid for <strong>60 minutes</strong>.</p>
 
-<div style="text-align:center;">
-  <a href="${resetLink}" class="btn">Reset Password</a>
+<div style="text-align:center; margin:25px 0;">
+  <a href="${resetLink}"
+     style="
+       display:inline-block;
+       padding:14px 26px;
+       background:#1e40af;
+       color:#ffffff !important;
+       text-decoration:none;
+       border-radius:8px;
+       font-size:16px;
+       font-weight:600;
+       font-family:Arial, sans-serif;
+     ">
+     Reset Password
+  </a>
 </div>
       <p>If you didn’t request this, ignore this email.</p>
 
@@ -156,16 +175,25 @@ router.post("/forgot-password", async (req, res) => {
 </html>
 `;
 
-    await sendEmail(
-      email,
-      "Reset your ASAT Automation password",
-      resetEmailHTML
-    );
+   try {
+  await sendEmail(
+    email,
+    "Reset your ASAT Automation password",
+    resetEmailHTML
+  );
+  console.log("RESET EMAIL SENT TO:", email);
+} catch (emailError) {
+  console.error("EMAIL SEND FAILED:", emailError);
+  return res.status(500).json({ message: "Email service failed" });
+}
+
 
     res.json({ message: "Reset email sent" });
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
+  }  catch (err) {
+  console.error("FORGOT PASSWORD ERROR:", err);
+  res.status(500).json({ message: "Server error", error: err.message });
+}
+
 });
 
 /* =========================
@@ -191,8 +219,10 @@ router.post("/reset-password/:token", async (req, res) => {
 
     res.json({ message: "Password reset successful" });
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
+  console.error("FORGOT PASSWORD ERROR:", err);
+  res.status(500).json({ message: "Server error", error: err.message });
+}
+
 });
 
 module.exports = router;
