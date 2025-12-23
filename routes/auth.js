@@ -70,10 +70,9 @@ router.post("/forgot-password", async (req, res) => {
     const { email } = req.body;
 
     console.log("FORGOT PASSWORD REQUEST:", email);
-    console.log("EMAIL_USER:", process.env.EMAIL_USER);
-    console.log("EMAIL_PASS EXISTS:", !!process.env.EMAIL_PASS);
     console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
-
+console.log("SENDGRID KEY LOADED:", !!process.env.SENDGRID_API_KEY);
+console.log("EMAIL_FROM:", process.env.EMAIL_FROM);
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -91,54 +90,6 @@ router.post("/forgot-password", async (req, res) => {
     const resetEmailHTML = `
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8" />
-  <style>
-    body {
-      background:#f4f6f8;
-      font-family: Arial, sans-serif;
-    }
-    .container {
-      max-width:520px;
-      margin:40px auto;
-      background:#fff;
-      border-radius:8px;
-      overflow:hidden;
-      box-shadow:0 4px 12px rgba(0,0,0,0.1);
-    }
-    .header {
-      background:#1e5eff;
-      color:#fff;
-      padding:20px;
-      text-align:center;
-      font-size:22px;
-      font-weight:bold;
-    }
-    .content {
-      padding:30px;
-      font-size:15px;
-      color:#333;
-      line-height:1.6;
-    }
-    .btn {
-      display:inline-block;
-      margin:25px 0;
-      padding:14px 22px;
-      color:#dc2626;
-      background:Black;
-      text-decoration:none;
-      border-radius:6px;
-      font-weight:bold;
-    }
-    .footer {
-      background:#f0f2f5;
-      padding:15px;
-      text-align:center;
-      font-size:12px;
-      color:#777;
-    }
-  </style>
-</head>
 <body>
   <div class="container">
     <div class="header">ASAT Automation</div>
