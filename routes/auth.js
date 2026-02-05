@@ -176,14 +176,18 @@ router.post("/reset-password/:token", async (req, res) => {
 
 });
 
-// GET logged-in user
+/* =========================
+   GET LOGGED IN USER
+========================= */
 router.get("/me", async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
+    const authHeader = req.headers.authorization;
 
-    if (!token) {
-      return res.status(401).json({ message: "No token" });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "No token provided" });
     }
+
+    const token = authHeader.split(" ")[1];
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
@@ -195,8 +199,8 @@ router.get("/me", async (req, res) => {
 
     res.json(user);
   } catch (err) {
+    console.error("ME ROUTE ERROR:", err.message);
     res.status(401).json({ message: "Invalid token" });
   }
 });
-
 module.exports = router;

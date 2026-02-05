@@ -14,7 +14,7 @@ app.use(cors({ origin: "*" }));
 app.use(express.json());
 
 /* ROUTES */
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", require("./routes/auth"));
 
 /* HEALTH CHECK */
 app.get("/api/health", (req, res) => {
