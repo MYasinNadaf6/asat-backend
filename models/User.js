@@ -17,10 +17,14 @@ const UserSchema = new mongoose.Schema({
   resetToken: {
     type: String
   },
-{ timestamps: true },
+    
   resetTokenExpiry: {
     type: Date
   }
-});
+},
+ {
+    timestamps: true, // ✅ THIS must be inside second argument
+  }
+);
 
 module.exports = mongoose.model("User", UserSchema);
