@@ -7,61 +7,53 @@ const app = express();
 
 /* 1. MIDDLEWARE */
 app.use(cors({ origin: "*" }));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' })); // Increased limit for Base64 images
 
-/* 2. UPTIME ROBOT / HEALTH CHECK ROUTE */
-// This is the URL you will give to UptimeRobot: https://your-app.com/api/health
+/* 2. HEALTH CHECK ROUTE */
 app.get("/api/health", (req, res) => {
-  const statusData = {
+  res.status(200).json({
     status: "Active",
-    uptime: process.uptime(), // Shows how long the server has been running
+    uptime: process.uptime(),
     message: "ASAT Automation Backend is Live",
     timestamp: new Date().toISOString()
-  };
-  
-  console.log(`Ping received from UptimeRobot at: ${statusData.timestamp}`);
-  res.status(200).json(statusData);
+  });
 });
 
-/* 3. DATABASE MODELS (Example for your Dynamic Products) */
+/* 3. DATABASE MODELS */
 const ProductSchema = new mongoose.Schema({
   title: String,
   image: String,
   description: String,
   category: String
-});
+}, { timestamps: true });
+
 const Product = mongoose.model("Product", ProductSchema);
 
 /* 4. ROUTES */
 app.use("/api/auth", require("./routes/auth"));
 
-// Dynamic Products Route
-app.get("/api/products", async (req, res) => {
+// GET all products - Matches ManageProducts.jsx
+app.get("/api/products/all", async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find().sort({ createdAt: -1 });
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch products" });
   }
 });
 
-/* 5. DATABASE CONNECTION & START */
-const PORT = process.env.PORT || 5000;
+// GET single product - Matches ProductDetail.jsx
+app.get("/api/products/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+    res.json(product);
+  } catch (err) {
+    res.status(500).json({ error: "Invalid ID" });
+  }
+});
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("✅ MongoDB Atlas connected");
-    app.listen(PORT, () => {
-      console.log(`🚀 ASAT Server running on port ${PORT}`);
-      console.log(`📡 Health Check available at: http://localhost:${PORT}/api/health`);
-    });
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
-  });
-
-  // POST a new product
+// POST a new product
 app.post("/api/products/add", async (req, res) => {
   try {
     const newProduct = new Product(req.body);
@@ -69,6 +61,20 @@ app.post("/api/products/add", async (req, res) => {
     res.status(201).json(newProduct);
   } catch (err) {
     res.status(500).json({ error: "Failed to add product" });
+  }
+});
+
+// UPDATE a product - NEW EDIT LOGIC
+app.put("/api/products/update/:id", async (req, res) => {
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.json(updatedProduct);
+  } catch (err) {
+    res.status(500).json({ error: "Update failed" });
   }
 });
 
@@ -81,3 +87,12 @@ app.delete("/api/products/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete" });
   }
 });
+
+/* 5. DATABASE CONNECTION */
+const PORT = process.env.PORT || 5000;
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("✅ MongoDB Atlas connected");
+    app.listen(PORT, () => console.log(`🚀 ASAT Server running on port ${PORT}`));
+  })
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
