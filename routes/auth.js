@@ -175,7 +175,15 @@ router.post("/reset-password/:token", async (req, res) => {
 }
 
 });
-
+// Add this to your existing auth routes
+router.get("/users", async (req, res) => {
+  try {
+    const users = await User.find().select("-password"); // Hide passwords for security
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
 /* =========================
    GET LOGGED IN USER
 ========================= */
