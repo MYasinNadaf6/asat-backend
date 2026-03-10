@@ -60,3 +60,24 @@ mongoose
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err);
   });
+
+  // POST a new product
+app.post("/api/products/add", async (req, res) => {
+  try {
+    const newProduct = new Product(req.body);
+    await newProduct.save();
+    res.status(201).json(newProduct);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to add product" });
+  }
+});
+
+// DELETE a product
+app.delete("/api/products/:id", async (req, res) => {
+  try {
+    await Product.findByIdAndDelete(req.params.id);
+    res.json({ message: "Product deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete" });
+  }
+});
