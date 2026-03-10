@@ -7,14 +7,13 @@ const app = express();
 
 /* 1. MIDDLEWARE */
 app.use(cors({ origin: "*" }));
-app.use(express.json({ limit: '50mb' })); // Increased limit for Base64 images
+app.use(express.json({ limit: '50mb' }));
 
 /* 2. HEALTH CHECK ROUTE */
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     status: "Active",
     uptime: process.uptime(),
-    message: "ASAT Automation Backend is Live",
     timestamp: new Date().toISOString()
   });
 });
@@ -24,7 +23,14 @@ const ProductSchema = new mongoose.Schema({
   title: String,
   image: String,
   description: String,
-  category: String
+  category: { type: String, default: "Industrial Automation" },
+  // Added technical specs object
+  specs: {
+    tableSize: { type: String, default: "N/A" },
+    spindleSpeed: { type: String, default: "N/A" },
+    powerRating: { type: String, default: "N/A" },
+    accuracy: { type: String, default: "N/A" }
+  }
 }, { timestamps: true });
 
 const Product = mongoose.model("Product", ProductSchema);
@@ -32,7 +38,7 @@ const Product = mongoose.model("Product", ProductSchema);
 /* 4. ROUTES */
 app.use("/api/auth", require("./routes/auth"));
 
-// GET all products - Matches ManageProducts.jsx
+// GET all products
 app.get("/api/products/all", async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
@@ -42,7 +48,7 @@ app.get("/api/products/all", async (req, res) => {
   }
 });
 
-// GET single product - Matches ProductDetail.jsx
+// GET single product
 app.get("/api/products/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -64,7 +70,7 @@ app.post("/api/products/add", async (req, res) => {
   }
 });
 
-// UPDATE a product - NEW EDIT LOGIC
+// UPDATE a product
 app.put("/api/products/update/:id", async (req, res) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(
