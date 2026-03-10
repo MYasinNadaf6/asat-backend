@@ -1,43 +1,62 @@
 require("dotenv").config();
-
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-const authRoutes = require("./routes/auth");
-const authMiddleware = require("./middleware/auth");
-
 const app = express();
 
-/* MIDDLEWARE */
+/* 1. MIDDLEWARE */
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 
-/* ROUTES */
+/* 2. UPTIME ROBOT / HEALTH CHECK ROUTE */
+// This is the URL you will give to UptimeRobot: https://your-app.com/api/health
+app.get("/api/health", (req, res) => {
+  const statusData = {
+    status: "Active",
+    uptime: process.uptime(), // Shows how long the server has been running
+    message: "ASAT Automation Backend is Live",
+    timestamp: new Date().toISOString()
+  };
+  
+  console.log(`Ping received from UptimeRobot at: ${statusData.timestamp}`);
+  res.status(200).json(statusData);
+});
+
+/* 3. DATABASE MODELS (Example for your Dynamic Products) */
+const ProductSchema = new mongoose.Schema({
+  title: String,
+  image: String,
+  description: String,
+  category: String
+});
+const Product = mongoose.model("Product", ProductSchema);
+
+/* 4. ROUTES */
 app.use("/api/auth", require("./routes/auth"));
 
-/* HEALTH CHECK */
-app.get("/api/health", (req, res) => {
-  res.json({ status: "OK", service: "Auth Backend Running" });
+// Dynamic Products Route
+app.get("/api/products", async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch products" });
+  }
 });
 
-/* PROTECTED TEST */
-app.get("/api/dashboard", authMiddleware, (req, res) => {
-  res.json({
-    message: "Welcome to protected dashboard",
-    userId: req.userId
-  });
-});
-
-/* START SERVER */
+/* 5. DATABASE CONNECTION & START */
 const PORT = process.env.PORT || 5000;
 
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log("MongoDB Atlas connected");
-    app.listen(PORT, () =>
-      console.log(`Server running on port ${PORT}`)
-    );
+    console.log("✅ MongoDB Atlas connected");
+    app.listen(PORT, () => {
+      console.log(`🚀 ASAT Server running on port ${PORT}`);
+      console.log(`📡 Health Check available at: http://localhost:${PORT}/api/health`);
+    });
   })
-  .catch((err) => console.error("MongoDB error:", err));
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
+  });
