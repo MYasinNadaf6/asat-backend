@@ -175,10 +175,21 @@ router.post("/reset-password/:token", async (req, res) => {
 }
 
 });
-// Add this to your existing auth routes
+// Update your /users route
 router.get("/users", async (req, res) => {
   try {
-    const users = await User.find().select("-password"); // Hide passwords for security
+    const authHeader = req.headers.authorization;
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    const currentUser = await User.findById(decoded.id);
+
+    // BLOCK access if they are not an admin
+    if (currentUser.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+
+    const users = await User.find().select("-password");
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: "Server error" });

@@ -17,7 +17,11 @@ const UserSchema = new mongoose.Schema({
   resetToken: {
     type: String
   },
-    
+    role: { 
+    type: String, 
+    enum: ["user", "admin"], 
+    default: "user" // Everyone starts as a regular user
+  },
   resetTokenExpiry: {
     type: Date
   }
