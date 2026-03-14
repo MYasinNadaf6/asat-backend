@@ -87,45 +87,53 @@ console.log("EMAIL_FROM:", process.env.EMAIL_FROM);
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
     /* ===== EMAIL DESIGN ===== */
-    const resetEmailHTML = `
+   const resetEmailHTML = `
 <!DOCTYPE html>
 <html>
-<body>
+<head>
+  <style>
+    .body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000000; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 20px auto; background-color: #0a0a0a; border: 1px solid #333; border-radius: 16px; overflow: hidden; }
+    .header { background: linear-gradient(to bottom, #3a003a, #000000); padding: 40px 20px; text-align: center; }
+    .content { padding: 40px; color: #ffffff; line-height: 1.6; }
+    .logo-text { font-size: 24px; font-weight: 900; letter-spacing: 4px; color: #ffffff; text-transform: uppercase; margin: 0; }
+    .brand-sub { color: #f59e0b; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px; }
+    .h1 { font-size: 22px; font-weight: bold; margin-bottom: 20px; color: #ffffff; }
+    .btn-container { text-align: center; margin: 35px 0; }
+    .btn { display: inline-block; padding: 16px 36px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 16px; transition: background 0.3s; }
+    .footer { padding: 30px; background-color: #050505; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #1a1a1a; }
+    .warning { font-size: 13px; color: #888; margin-top: 30px; border-top: 1px solid #222; pt: 20px; }
+  </style>
+</head>
+<body class="body">
   <div class="container">
-    <div class="header">ASAT Automation</div>
+    <div class="header">
+      <p class="logo-text">| ASAT</p>
+      <div class="brand-sub">Automation Solutions</div>
+    </div>
     <div class="content">
+      <h1 class="h1">Password Reset Request</h1>
       <p>Hello,</p>
-      <p>You requested a password reset for your ASAT Automation account.</p>
-      <p>This link is valid for <strong>60 minutes</strong>.</p>
+      <p>We received a request to reset the password for your <strong>ASAT Automation</strong> account. To proceed, please click the button below:</p>
+      
+      <div class="btn-container">
+        <a href="${resetLink}" class="btn">Reset My Password</a>
+      </div>
 
-<div style="text-align:center; margin:25px 0;">
-  <a href="${resetLink}"
-     style="
-       display:inline-block;
-       padding:14px 26px;
-       background:#1e40af;
-       color:#ffffff !important;
-       text-decoration:none;
-       border-radius:8px;
-       font-size:16px;
-       font-weight:600;
-       font-family:Arial, sans-serif;
-     ">
-     Reset Password
-  </a>
-</div>
-      <p>If you didn’t request this, ignore this email.</p>
-
-      <p>Regards,<br><strong>ASAT Automation Team</strong></p>
+      <p>This secure link is valid for <strong>60 minutes</strong>. If you did not make this request, you can safely ignore this email; your account remains secure.</p>
+      
+      <div class="warning">
+        <p>Regards,<br><strong>The ASAT Technical Team</strong></p>
+      </div>
     </div>
     <div class="footer">
-      © ${new Date().getFullYear()} ASAT Automation
+      &copy; ${new Date().getFullYear()} ASAT Automation. All rights reserved.<br>
+      Industrial Solutions for a Modern World.
     </div>
   </div>
 </body>
 </html>
 `;
-
    try {
   await sendEmail(
     email,
