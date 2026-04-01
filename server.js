@@ -88,8 +88,10 @@ app.put("/api/products/update/:id", async (req, res) => {
 app.delete("/api/products/:id", async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
-    res.json({ message: "Product deleted" });
-  } catch (err) {
+    res.json({ message: "Product deleted" }); 
+  } catch (err) 
+  
+  {
     res.status(500).json({ error: "Failed to delete" });
   }
 });
